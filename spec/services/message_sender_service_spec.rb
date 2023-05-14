@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'rails_helper'
 
 RSpec.describe MessageSenderService do
@@ -6,10 +8,10 @@ RSpec.describe MessageSenderService do
 
   describe '#call' do
     before do
-      stub_request(:post, "https://mock-text-provider.parentsquare.com/provider1")
+      stub_request(:post, 'https://mock-text-provider.parentsquare.com/provider1')
         .to_return(status: 200, body: { message_id: '123' }.to_json, headers: {})
 
-      stub_request(:post, "https://mock-text-provider.parentsquare.com/provider2")
+      stub_request(:post, 'https://mock-text-provider.parentsquare.com/provider2')
         .to_return(status: 200, body: { message_id: '123' }.to_json, headers: {})
     end
 

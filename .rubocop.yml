@@ -1,0 +1,14 @@
+AllCops:
+  NewCops: enable
+  Exclude:
+    - bin/*
+    - public/**/*
+
+Style/Encoding:
+  Enabled: false
+Style/Documentation:
+  Enabled: false
+Metrics/MethodLength:
+  Max: 15
+Metrics/BlockLength:
+  Max: 100

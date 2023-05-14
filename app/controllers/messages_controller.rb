@@ -1,13 +1,14 @@
+# frozen_string_literal: true
+
 class MessagesController < ApplicationController
   skip_before_action :verify_authenticity_token, only: [:callback]
-  before_action :set_message, only: %i[ show edit update destroy ]
+  before_action :set_message, only: %i[show edit update destroy]
 
   def index
     @messages = Message.all
   end
 
-  def show
-  end
+  def show; end
 
   def new
     @message = Message.new
@@ -19,7 +20,7 @@ class MessagesController < ApplicationController
     respond_to do |format|
       if @message.save
         MessageSenderService.new(@message).call
-        format.html { redirect_to root_path, notice: "Message was successfully created." }
+        format.html { redirect_to root_path, notice: 'Message was successfully created.' }
       else
         format.html { render :new, status: :unprocessable_entity }
       end
@@ -29,7 +30,7 @@ class MessagesController < ApplicationController
   def update
     respond_to do |format|
       if @message.update(message_params)
-        format.html { redirect_to message_url(@message), notice: "Message was successfully updated." }
+        format.html { redirect_to message_url(@message), notice: 'Message was successfully updated.' }
       else
         format.html { render :edit, status: :unprocessable_entity }
       end
@@ -40,7 +41,7 @@ class MessagesController < ApplicationController
     @message.destroy
 
     respond_to do |format|
-      format.html { redirect_to messages_url, notice: "Message was successfully destroyed." }
+      format.html { redirect_to messages_url, notice: 'Message was successfully destroyed.' }
       format.json { head :no_content }
     end
   end
@@ -50,7 +51,13 @@ class MessagesController < ApplicationController
     @message.update(status: params[:status])
 
     if @message.status == 'failed'
-      failover_provider = @message.provider == MessageSenderService::PROVIDERS[0] ? MessageSenderService::PROVIDERS[1] : MessageSenderService::PROVIDERS[0]
+      current_provider = @message.provider
+      failover_provider = if current_provider == MessageSenderService::PROVIDERS[0]
+                            MessageSenderService::PROVIDERS[1]
+                          else
+                            MessageSenderService::PROVIDERS[0]
+                          end
+
       @message.update(provider: failover_provider)
       MessageSenderService.new(@message).send_message_to_provider(failover_provider)
     end
@@ -58,13 +65,13 @@ class MessagesController < ApplicationController
     render json: @message
   end
 
-
   private
-    def set_message
-      @message = Message.find(params[:id])
-    end
 
-    def message_params
-      params.require(:message).permit(:to_number, :callback_url, :message, :status, :provider, :external_id)
-    end
+  def set_message
+    @message = Message.find(params[:id])
+  end
+
+  def message_params
+    params.require(:message).permit(:to_number, :callback_url, :message, :status, :provider, :external_id)
+  end
 end
