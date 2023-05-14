@@ -48,9 +48,16 @@ class MessagesController < ApplicationController
   def callback
     @message = Message.find_by(external_id: params[:message_id])
     @message.update(status: params[:status])
-    @message.save
+
+    if @message.status == 'failed'
+      failover_provider = @message.provider == MessageSenderService::PROVIDERS[0] ? MessageSenderService::PROVIDERS[1] : MessageSenderService::PROVIDERS[0]
+      @message.update(provider: failover_provider)
+      MessageSenderService.new(@message).send_message_to_provider(failover_provider)
+    end
+
     render json: @message
   end
+
 
   private
     def set_message
@@ -58,6 +65,6 @@ class MessagesController < ApplicationController
     end
 
     def message_params
-      params.require(:message).permit(:to_number, :callback_url, :message, :status, :external_id)
+      params.require(:message).permit(:to_number, :callback_url, :message, :status, :provider, :external_id)
     end
 end
