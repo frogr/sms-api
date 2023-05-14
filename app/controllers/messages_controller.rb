@@ -30,7 +30,7 @@ class MessagesController < ApplicationController
 
     respond_to do |format|
       if @message.save
-        send_message(@message)
+        MessageSenderService.new(@message).call
         format.html { redirect_to message_url(@message), notice: "Message was successfully created." }
         format.json { render :show, status: :created, location: @message }
       else
@@ -62,45 +62,6 @@ class MessagesController < ApplicationController
       format.json { head :no_content }
     end
   end
-
-def send_message(message)
-  uri = URI.parse("https://mock-text-provider.parentsquare.com/provider1")
-  request = Net::HTTP::Post.new(uri)
-  request["Content-Type"] = "application/json"
-  request.body = JSON.dump({
-    "to_number" => message.to_number,
-    "message" => message.message,
-    "callback_url" => message.callback_url
-  })
-
-  req_options = {
-    use_ssl: uri.scheme == "https",
-  }
-
-  begin
-    response = Net::HTTP.start(uri.hostname, uri.port, req_options) do |http|
-      http.request(request)
-    end
-
-    if response.code.to_i >= 400
-      raise "Server Error: #{response.code} #{response.message}"
-    end
-
-    puts "***" * 20
-    puts response.code
-    puts response
-    puts response.body
-    puts "***" * 20
-
-    if response.code.to_i == 200
-      message.update(external_id: JSON.parse(response.body)["message_id"])
-    end
-
-    rescue => e
-      puts "An error occurred: [#{response.code}]: #{e.message}"
-    end
-end
-
 
   def callback
     @message = Message.find_by(external_id: params[:message_id])
