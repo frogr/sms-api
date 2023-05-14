@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2023_05_13_002107) do
+ActiveRecord::Schema[7.0].define(version: 2023_05_14_160109) do
   create_table "messages", force: :cascade do |t|
     t.string "to_number"
     t.string "callback_url"
@@ -18,6 +18,7 @@ ActiveRecord::Schema[7.0].define(version: 2023_05_13_002107) do
     t.string "status"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "external_id"
   end
 
 end

@@ -17,20 +17,11 @@
   </div>
 
   <div>
-    <%= form.label :callback_url, style: "display: block" %>
-    <%= form.text_field :callback_url %>
-  </div>
-
-  <div>
     <%= form.label :message, style: "display: block" %>
     <%= form.text_field :message %>
   </div>
 
-  <div>
-    <%= form.label :status, style: "display: block" %>
-    <%= form.text_field :status %>
-  </div>
-
+  <%= form.hidden_field(:callback_url, :value => "https://1c25-2600-1702-211f-5610-acca-4082-c904-9bb8.ngrok-free.app/messages/callback")%>
   <div>
     <%= form.submit %>
   </div>
