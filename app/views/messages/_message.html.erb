@@ -1,27 +1,23 @@
 <div id="<%= dom_id message %>">
-  <p>
-    <strong>To number:</strong>
-    <%= message.to_number %>
-  </p>
-
-  <p>
-    <strong>Callback url:</strong>
-    <%= message.callback_url %>
-  </p>
-
-  <p>
-    <strong>Message:</strong>
-    <%= message.message %>
-  </p>
-
-  <p>
-    <strong>Status:</strong>
-    <%= message.status %>
-  </p>
-
-  <p>
-    <strong>Provider:</strong>
-    <%= message.provider %>
-  </p>
-
+  <div class="message-container">
+    <div class="message-header">
+      <strong>To:</strong>
+      <%= message.to_number %> | 
+      <strong>Status:</strong>
+      <%= message.status %>
+    </div>
+    <div class="message-body">
+      <%= message.message %>
+    </div>
+    <div class="message-details">
+      <strong>Provider:</strong>
+      <%= message.provider %>
+      <br>
+      <strong>Created at:</strong>
+      <%= message.created_at %>
+    </div>
+    <div>
+      <%= link_to "▶", message, class: 'show-message-link'%>
+    </div>
+  </div>
 </div>

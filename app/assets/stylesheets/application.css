@@ -13,3 +13,67 @@
  *= require_tree .
  *= require_self
  */
+
+ /* font family Jost for everything on the page */
+  body {
+    font-family: 'Jost', sans-serif;
+  }
+
+  #messages {
+    overflow-y: scroll;
+    height: 500px;
+    width: 40%;
+  }
+
+  .message-container {
+    background-color: #f5f5f5;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 10px;
+    margin-bottom: 10px;     
+  }
+
+  .message-header {
+    background-color: #eee;
+    padding: 5px;
+    margin-bottom: 5px;
+    font-weight: bold;
+  }
+
+  .message-body {
+    padding: 5px;
+    margin-bottom: 5px;
+    background-color: white;
+  }
+
+  .message-details {
+    padding: 5px;
+    font-style: italic;
+    color: #777;
+  }
+
+  .message strong {
+    color: #333;
+  }
+
+  .message-header span::after {
+    content: " | ";
+    margin-left: 5px;
+    margin-right: 5px;
+  }
+
+  .message-details strong {
+    color: #555;
+  }
+
+  .show-message-link {
+    color: #555;
+    text-decoration: none;
+    margin-left: 80%;
+  }
+
+  .new-message-link {
+    color: blue;
+    text-decoration: none;
+    font-size: 36px;
+  }
