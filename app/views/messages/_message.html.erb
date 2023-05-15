@@ -4,7 +4,13 @@
       <strong>To:</strong>
       <%= message.to_number %> | 
       <strong>Status:</strong>
-      <%= message.status %>
+      <% if message.status == 'delivered'%>
+        <span class='success-check'>✓</span>
+      <% elsif message.status == 'failed'%>
+        <span class='failed-check'>✗</span>
+      <% elsif message.status == 'invalid'%>
+        <span class='invalid-check'>⚠</span>
+      <% end %>
     </div>
     <div class="message-body">
       <%= message.message %>
@@ -16,8 +22,6 @@
       <strong>Created at:</strong>
       <%= message.created_at %>
     </div>
-    <div>
       <%= link_to "▶", message, class: 'show-message-link'%>
-    </div>
   </div>
 </div>

@@ -20,6 +20,9 @@ class MessageSenderService
       if response.is_a?(Net::HTTPSuccess)
         @message.update(external_id: JSON.parse(response.body)['message_id'])
         break
+      else
+        Rails.logger.error("Failed to send message with provider: #{provider}")
+        next
       end
     end
   end

@@ -18,8 +18,7 @@ class MessagesController < ApplicationController
     @message = Message.new(message_params)
 
     if exists_in_redis?(@message.to_number)
-      @message.errors.add(:base, 'This number is listed as invalid in our system. Please use a different number.')
-      render :new, status: :unprocessable_entity
+      invalid_message_error(@message)
     else
       respond_to do |format|
         if @message.save
@@ -63,6 +62,11 @@ class MessagesController < ApplicationController
   end
 
   private
+
+  def invalid_message_error(message)
+    message.errors.add(:base, 'This number is listed as invalid in our system. Please use a different number.')
+    render :new, status: :unprocessable_entity
+  end
 
   def failed_message(_message)
     failover_provider = switch_providers(@message.provider)

@@ -56,12 +56,6 @@
     color: #333;
   }
 
-  .message-header span::after {
-    content: " | ";
-    margin-left: 5px;
-    margin-right: 5px;
-  }
-
   .message-details strong {
     color: #555;
   }
@@ -76,4 +70,20 @@
     color: blue;
     text-decoration: none;
     font-size: 36px;
+  }
+
+  .new-message-link:hover {
+    color: #555;
+  }
+
+  .success-check {
+    color: green;
+  }
+
+  .failed-check {
+    color: red;
+  }
+
+  .invalid-check {
+    color: rgba(255, 166, 0, 0.954);
   }
