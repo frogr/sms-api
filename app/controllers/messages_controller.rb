@@ -17,12 +17,17 @@ class MessagesController < ApplicationController
   def create
     @message = Message.new(message_params)
 
-    respond_to do |format|
-      if @message.save
-        MessageSenderService.new(@message).call
-        format.html { redirect_to root_path, notice: 'Message was successfully created.' }
-      else
-        format.html { render :new, status: :unprocessable_entity }
+    if exists_in_redis?(@message.to_number)
+      @message.errors.add(:base, 'This number is listed as invalid in our system. Please use a different number.')
+      render :new, status: :unprocessable_entity
+    else
+      respond_to do |format|
+        if @message.save
+          MessageSenderService.new(@message).call
+          format.html { redirect_to root_path, notice: 'Message was successfully created.' }
+        else
+          format.html { render :new, status: :unprocessable_entity }
+        end
       end
     end
   end
@@ -50,22 +55,37 @@ class MessagesController < ApplicationController
     @message = Message.find_by(external_id: params[:message_id])
     @message.update(status: params[:status])
 
-    if @message.status == 'failed'
-      current_provider = @message.provider
-      failover_provider = if current_provider == MessageSenderService::PROVIDERS[0]
-                            MessageSenderService::PROVIDERS[1]
-                          else
-                            MessageSenderService::PROVIDERS[0]
-                          end
+    store_in_redis(@message.to_number) if @message.status == 'invalid'
 
-      @message.update(provider: failover_provider)
-      MessageSenderService.new(@message).send_message_to_provider(failover_provider)
-    end
+    failed_message(@message) if @message.status == 'failed'
 
     render json: @message
   end
 
   private
+
+  def failed_message(_message)
+    failover_provider = switch_providers(@message.provider)
+
+    @message.update(provider: failover_provider)
+    MessageSenderService.new(@message).send_message_to_provider(failover_provider)
+  end
+
+  def switch_providers(provider)
+    if provider == MessageSenderService::PROVIDERS[0]
+      MessageSenderService::PROVIDERS[1]
+    else
+      MessageSenderService::PROVIDERS[0]
+    end
+  end
+
+  def store_in_redis(message_to_number)
+    RedisService.client.set(message_to_number, 'invalid')
+  end
+
+  def exists_in_redis?(message_to_number)
+    RedisService.client.get(message_to_number)
+  end
 
   def set_message
     @message = Message.find(params[:id])

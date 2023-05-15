@@ -1,0 +1,14 @@
+development:
+  host: localhost
+  port: 6379
+  db: 0
+
+test:
+  host: localhost
+  port: 6379
+  db: 1
+
+production:
+  host: my_production_redis_host
+  port: 6379
+  db: 0
