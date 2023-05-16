@@ -33,13 +33,18 @@ class MessagesController < ApplicationController
 
   def callback
     @message = Message.find_by(external_id: params[:message_id])
-    @message.update(status: params[:status])
 
-    store_in_redis if @message.reload.status == 'invalid'
+    if @message.nil?
+      render json: { error: 'Message not found' }, status: :not_found
+    else
+      @message.update(status: params[:status])
 
-    failed_message(@message) if @message.reload.status == 'failed'
+      store_in_redis if @message.reload.status == 'invalid'
 
-    render json: @message
+      failed_message(@message) if @message.reload.status == 'failed'
+
+      render json: @message
+    end
   end
 
   def update

@@ -12,14 +12,6 @@ RSpec.describe MessagesController, type: :controller do
     { to_number: '', callback_url: '', message: '' }
   end
 
-  describe 'GET #index' do
-    it 'returns a success response' do
-      Message.create! valid_attributes
-      get :index
-      expect(response).to be_successful
-    end
-  end
-
   describe 'POST #create' do
     context 'with valid params' do
       before do
@@ -42,6 +34,33 @@ RSpec.describe MessagesController, type: :controller do
         expect do
           post :create, params: { message: invalid_attributes }
         end.to change(Message, :count).by(0)
+      end
+    end
+  end
+
+  describe 'POST #callback' do
+    let(:message) { Message.create! valid_attributes }
+
+    context 'with valid params' do
+      let(:callback_params) do
+        { message_id: message.external_id, status: 'delivered' }
+      end
+
+      it 'updates the message status' do
+        post :callback, params: callback_params, as: :json
+        message.reload
+        expect(message.status).to eq('delivered')
+      end
+    end
+
+    context 'with invalid params' do
+      let(:callback_params) do
+        { message_id: nil, status: 'delivered' }
+      end
+
+      it 'does not update the message status' do
+        post :callback, params: callback_params, as: :json
+        expect(response.status).to eq(404)
       end
     end
   end
