@@ -6,23 +6,47 @@ RSpec.describe MessageSenderService do
   let(:message) { Message.create(to_number: '1234567890', callback_url: callback_url, message: 'Test message') }
   let(:service) { described_class.new(message) }
   let(:callback_url) { 'https://9289-2600-1702-211f-5610-acca-4082-c904-9bb8.ngrok-free.app/messages/callback' }
+  let(:max_retries) { 5 }
 
   describe '#call' do
-    before do
-      stub_request(:post, MessageSenderService::PROVIDERS[0])
-        .to_return(status: 200, body: { message_id: '123' }.to_json, headers: {})
+    context 'when the message sends successfully' do
+      before do
+        stub_request(:post, MessageSenderService::PROVIDERS[0])
+          .to_return(status: 200, body: { message_id: '123' }.to_json, headers: {})
 
-      stub_request(:post, MessageSenderService::PROVIDERS[1])
-        .to_return(status: 200, body: { message_id: '123' }.to_json, headers: {})
+        stub_request(:post, MessageSenderService::PROVIDERS[1])
+          .to_return(status: 200, body: { message_id: '123' }.to_json, headers: {})
+      end
+
+      it 'sends a message' do
+        service.call
+        expect(message.reload.external_id).to eq('123')
+      end
+
+      it 'logs a successful message send' do
+        expect(Rails.logger).to receive(:info).at_least(:once)
+        service.call
+      end
     end
 
-    it 'sends a message' do
-      service.call
-      expect(message.reload.external_id).to eq('123')
+    context 'when sending the message fails' do
+      before do
+        stub_request(:post, MessageSenderService::PROVIDERS[0])
+          .to_return(status: 500, body: 'Something went wrong.')
+
+        stub_request(:post, MessageSenderService::PROVIDERS[1])
+          .to_return(status: 500, body: 'Something went wrong.')
+      end
+
+      it 'schedules a retry if the message is not sent successfully' do
+        expect(service).to receive(:schedule_retry).and_call_original.exactly(max_retries).times
+        expect(MessageSenderJob).to receive(:set).with(wait: kind_of(Numeric)).and_call_original.exactly(max_retries).times
+        service.call
+      end
     end
   end
 
-  describe 'failover Logic' do
+  describe 'failover logic' do
     context 'when the primary provider fails' do
       before do
         stub_request(:post, MessageSenderService::PROVIDERS[0])
@@ -44,7 +68,7 @@ RSpec.describe MessageSenderService do
       end
     end
 
-    context 'when all providers fail' do
+    context 'when both providers fail' do
       before do
         stub_request(:post, MessageSenderService::PROVIDERS[0])
           .to_return(status: 500, body: 'Something went wrong.')
@@ -54,7 +78,8 @@ RSpec.describe MessageSenderService do
       end
 
       it 'retries the message sending' do
-        expect(MessageSenderJob).to receive(:set).with(wait: kind_of(Numeric)).and_call_original.exactly(5).times
+        expect(service).to receive(:schedule_retry).and_call_original.exactly(max_retries).times
+        expect(MessageSenderJob).to receive(:set).with(wait: kind_of(Numeric)).and_call_original.exactly(max_retries).times
         service.call
       end
 
