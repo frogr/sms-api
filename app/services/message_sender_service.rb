@@ -17,27 +17,45 @@ class MessageSenderService
     max_retries = 5
     wait_time = 2
     weighted_providers = weighted_shuffle(PROVIDERS, [0.7, 0.3])
-    
-    loop do
-      weighted_providers.each do |provider|
-        @message.update(provider: provider)
-        response = send_message_to_provider(provider)
 
-        if response.is_a?(Net::HTTPSuccess)
-          body = JSON.parse(response.body)
-          @message.update(external_id: body['message_id'], status: 'delivered')
-          return
-        else
-          Rails.logger.error("Failed to send message with provider: #{provider}")
-        end
-      end
+    loop do
+      break if process_providers_in_order(weighted_providers)
 
       retries += 1
       break if retries > max_retries
 
-      MessageSenderJob.set(wait: wait_time.seconds).perform_later(@message.id)
+      schedule_retry(wait_time)
       wait_time *= 2
     end
+  end
+
+  def process_providers_in_order(providers)
+    providers.each do |provider|
+      return true if process_provider(provider)
+    end
+    false
+  end
+
+  def process_provider(provider)
+    @message.update(provider: provider)
+    response = send_message_to_provider(provider)
+
+    if response.is_a?(Net::HTTPSuccess)
+      handle_success_response(response)
+      true
+    else
+      Rails.logger.error("Failed to send message with provider: #{provider}")
+      false
+    end
+  end
+
+  def handle_success_response(response)
+    body = JSON.parse(response.body)
+    @message.update(external_id: body['message_id'], status: 'delivered')
+  end
+
+  def schedule_retry(wait_time)
+    MessageSenderJob.set(wait: wait_time.seconds).perform_later(@message.id)
   end
 
   def send_message_to_provider(url)
@@ -68,6 +86,7 @@ class MessageSenderService
 
   def weighted_shuffle(array, weights)
     raise ArgumentError, 'Array and weights sizes must be equal' unless array.size == weights.size
+
     temp_array = array.zip(weights).flat_map { |n, freq| Array.new((freq * 10).round, n) }
     temp_array.shuffle
   end

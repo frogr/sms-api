@@ -32,7 +32,7 @@ RSpec.describe MessageSenderService do
           .to_return(status: 200, body: '{"message_id": "123"}')
 
         @message = Message.create!(to_number: '1234567890', callback_url: callback_url, message: 'Test message',
-                        provider: MessageSenderService::PROVIDERS[0])
+                                   provider: MessageSenderService::PROVIDERS[0])
       end
 
       it 'uses the failover provider' do
