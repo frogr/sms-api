@@ -5,7 +5,7 @@ require 'rails_helper'
 RSpec.describe MessageSenderService do
   let(:message) { Message.create(to_number: '1234567890', callback_url: callback_url, message: 'Test message') }
   let(:service) { described_class.new(message) }
-  let(:callback_url) { 'https://f083-2600-1702-211f-5610-acca-4082-c904-9bb8.ngrok-free.app/messages/callback' }
+  let(:callback_url) { 'https://9289-2600-1702-211f-5610-acca-4082-c904-9bb8.ngrok-free.app/messages/callback' }
 
   describe '#call' do
     before do

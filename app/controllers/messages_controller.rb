@@ -18,7 +18,7 @@ class MessagesController < ApplicationController
     @message = Message.new(message_params)
 
     if exists_in_redis?(@message.to_number)
-      invalid_message_error(@message)
+      invalid_message_error
     else
       respond_to do |format|
         if @message.save
@@ -37,7 +37,7 @@ class MessagesController < ApplicationController
 
     store_in_redis if @message.reload.status == 'invalid'
 
-    failed_message if @message.reload.status == 'failed'
+    failed_message(@message) if @message.reload.status == 'failed'
 
     render json: @message
   end
@@ -68,11 +68,11 @@ class MessagesController < ApplicationController
     render :new, status: :unprocessable_entity
   end
 
-  def failed_message
-    failover_provider = switch_providers(@message.provider)
+  def failed_message(message)
+    failover_provider = switch_providers(message.provider)
 
     @message.update(provider: failover_provider)
-    MessageSenderService.new(@message).send_message_to_provider(failover_provider)
+    MessageSenderService.new(message).call
   end
 
   def switch_providers(provider)

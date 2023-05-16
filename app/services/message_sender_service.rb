@@ -16,9 +16,10 @@ class MessageSenderService
     retries = 0
     max_retries = 5
     wait_time = 2
-
+    weighted_providers = weighted_shuffle(PROVIDERS, [0.7, 0.3])
+    
     loop do
-      PROVIDERS.each do |provider|
+      weighted_providers.each do |provider|
         @message.update(provider: provider)
         response = send_message_to_provider(provider)
 
@@ -65,8 +66,14 @@ class MessageSenderService
     }
   end
 
+  def weighted_shuffle(array, weights)
+    raise ArgumentError, 'Array and weights sizes must be equal' unless array.size == weights.size
+    temp_array = array.zip(weights).flat_map { |n, freq| Array.new((freq * 10).round, n) }
+    temp_array.shuffle
+  end
+
   def log(response)
-    Rails.logger.info("Message sent to #{@provider} with response: #{response}")
+    Rails.logger.info("Message sent to #{@message.provider} with response: #{response}")
     Rails.logger.info '***' * 20
     Rails.logger.info "Response Code: #{response.code}"
     Rails.logger.info "Response: #{response}"
