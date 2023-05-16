@@ -17,12 +17,13 @@
  /* font family Jost for everything on the page */
   body {
     font-family: 'Jost', sans-serif;
+    background-color: #ddd;
   }
 
   #messages {
     overflow-y: scroll;
     height: 500px;
-    width: 40%;
+    width: 50%;
   }
 
   .message-container {
@@ -30,7 +31,10 @@
     border: 1px solid #ddd;
     border-radius: 4px;
     padding: 10px;
-    margin-bottom: 10px;     
+    margin-bottom: 10px;    
+    border: 1px solid #121212;
+    box-shadow: 6px 8px 2px #121212; 
+    width: 90%;
   }
 
   .message-header {
@@ -44,6 +48,7 @@
     padding: 5px;
     margin-bottom: 5px;
     background-color: white;
+    overflow-wrap: break-word;
   }
 
   .message-details {
@@ -66,14 +71,19 @@
     margin-left: 80%;
   }
 
+  .new-message {
+    width: 50%;
+  }
+
   .new-message-link {
-    color: blue;
+    color: #555;
     text-decoration: none;
     font-size: 36px;
+    float: right;
   }
 
   .new-message-link:hover {
-    color: #555;
+    color: #000;
   }
 
   .success-check {
