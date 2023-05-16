@@ -13,7 +13,7 @@
 
   <div>
     <%= form.label :to_number, style: "display: block" %>
-    <%= form.text_field :to_number %>
+    <%= form.text_field :to_number, type: "tel", minlength: 10, maxlength: 10, title: "Please enter a 10 digit phone number", pattern: "[0-9]{10}"%>
   </div>
 
   <div>
