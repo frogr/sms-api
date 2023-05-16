@@ -13,17 +13,29 @@ class MessageSenderService
   end
 
   def call
-    PROVIDERS.each do |provider|
-      @message.update(provider: provider)
-      response = send_message_to_provider(provider)
+    retries = 0
+    max_retries = 5
+    wait_time = 2
 
-      if response.is_a?(Net::HTTPSuccess)
-        @message.update(external_id: JSON.parse(response.body)['message_id'])
-        break
-      else
-        Rails.logger.error("Failed to send message with provider: #{provider}")
-        next
+    loop do
+      PROVIDERS.each do |provider|
+        @message.update(provider: provider)
+        response = send_message_to_provider(provider)
+
+        if response.is_a?(Net::HTTPSuccess)
+          body = JSON.parse(response.body)
+          @message.update(external_id: body['message_id'], status: 'delivered')
+          return
+        else
+          Rails.logger.error("Failed to send message with provider: #{provider}")
+        end
       end
+
+      retries += 1
+      break if retries > max_retries
+
+      MessageSenderJob.set(wait: wait_time.seconds).perform_later(@message.id)
+      wait_time *= 2
     end
   end
 

@@ -5,7 +5,7 @@ class MessagesController < ApplicationController
   before_action :set_message, only: %i[show edit update destroy]
 
   def index
-    @messages = Message.all
+    @messages = Message.last(10)
   end
 
   def show; end
@@ -22,13 +22,24 @@ class MessagesController < ApplicationController
     else
       respond_to do |format|
         if @message.save
-          MessageSenderService.new(@message).call
+          MessageSenderJob.perform_later(@message.id)
           format.html { redirect_to root_path, notice: 'Message was successfully created.' }
         else
           format.html { render :new, status: :unprocessable_entity }
         end
       end
     end
+  end
+
+  def callback
+    @message = Message.find_by(external_id: params[:message_id])
+    @message.update(status: params[:status])
+
+    store_in_redis if @message.reload.status == 'invalid'
+
+    failed_message if @message.reload.status == 'failed'
+
+    render json: @message
   end
 
   def update
@@ -50,25 +61,14 @@ class MessagesController < ApplicationController
     end
   end
 
-  def callback
-    @message = Message.find_by(external_id: params[:message_id])
-    @message.update(status: params[:status])
-
-    store_in_redis(@message.to_number) if @message.status == 'invalid'
-
-    failed_message(@message) if @message.status == 'failed'
-
-    render json: @message
-  end
-
   private
 
-  def invalid_message_error(message)
-    message.errors.add(:base, 'This number is listed as invalid in our system. Please use a different number.')
+  def invalid_message_error
+    @message.errors.add(:base, 'This number is listed as invalid in our system. Please use a different number.')
     render :new, status: :unprocessable_entity
   end
 
-  def failed_message(_message)
+  def failed_message
     failover_provider = switch_providers(@message.provider)
 
     @message.update(provider: failover_provider)
