@@ -43,5 +43,25 @@ RSpec.describe MessageSenderService do
         expect(@message.external_id).to eq('123')
       end
     end
+
+    context 'when all providers fail' do
+      before do
+        stub_request(:post, MessageSenderService::PROVIDERS[0])
+          .to_return(status: 500, body: 'Something went wrong.')
+
+        stub_request(:post, MessageSenderService::PROVIDERS[1])
+          .to_return(status: 500, body: 'Something went wrong.')
+      end
+
+      it 'retries the message sending' do
+        expect(MessageSenderJob).to receive(:set).with(wait: kind_of(Numeric)).and_call_original.exactly(5).times
+        service.call
+      end
+
+      it 'updates the message status to failed' do
+        service.call
+        expect(message.reload.status).to eq('failed')
+      end
+    end
   end
 end

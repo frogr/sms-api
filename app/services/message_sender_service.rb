@@ -19,7 +19,7 @@ class MessageSenderService
     weighted_providers = weighted_shuffle(PROVIDERS, [0.7, 0.3])
 
     loop do
-      break if process_providers_in_order(weighted_providers)
+      break if message_sent_with_any_provider?(weighted_providers)
 
       retries += 1
       break if retries > max_retries
@@ -29,10 +29,11 @@ class MessageSenderService
     end
   end
 
-  def process_providers_in_order(providers)
+  def message_sent_with_any_provider?(providers)
     providers.each do |provider|
       return true if process_provider(provider)
     end
+    @message.update(status: 'failed')
     false
   end
 
