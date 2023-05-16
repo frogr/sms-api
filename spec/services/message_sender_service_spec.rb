@@ -39,8 +39,10 @@ RSpec.describe MessageSenderService do
       end
 
       it 'schedules a retry if the message is not sent successfully' do
-        expect(service).to receive(:schedule_retry).and_call_original.exactly(max_retries).times
-        expect(MessageSenderJob).to receive(:set).with(wait: kind_of(Numeric)).and_call_original.exactly(max_retries).times
+        expect(service).to receive(:schedule_retry)
+          .and_call_original.exactly(max_retries).times
+        expect(MessageSenderJob).to receive(:set)
+          .with(wait: kind_of(Numeric)).and_call_original.exactly(max_retries).times
         service.call
       end
     end
@@ -78,8 +80,10 @@ RSpec.describe MessageSenderService do
       end
 
       it 'retries the message sending' do
-        expect(service).to receive(:schedule_retry).and_call_original.exactly(max_retries).times
-        expect(MessageSenderJob).to receive(:set).with(wait: kind_of(Numeric)).and_call_original.exactly(max_retries).times
+        expect(service).to receive(:schedule_retry)
+          .and_call_original.exactly(max_retries).times
+        expect(MessageSenderJob).to receive(:set)
+          .with(wait: kind_of(Numeric)).and_call_original.exactly(max_retries).times
         service.call
       end
 
