@@ -10,7 +10,8 @@
         <span class='failed-check'>✗</span>
       <% elsif message.status == 'invalid'%>
         <span class='invalid-check'>⚠</span>
-      <% end %>
+      <% end %> |
+      <%= link_to "View details", message, class: 'show-message-link'%>
     </div>
     <div class="message-body">
       <%= message.message %>
@@ -22,6 +23,5 @@
       <strong>Created at:</strong>
       <%= message.created_at %>
     </div>
-      <%= link_to "▶", message, class: 'show-message-link'%>
   </div>
 </div>
