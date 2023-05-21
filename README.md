@@ -8,10 +8,10 @@ SMS API designed to send messages to a mock service provider.
 * Run `bundle install` 
 * Run `ngrok http 3000`
 * Update `.env` with your `NGROK_CALLBACK_PATH` to expose the API to the internet
-* Start your rails server with `rails s` and view the app at `http://localhost:3000/messages`
+* Start your rails server with `rails s` and view the app at `http://localhost:3000`
 
-### Running tests
-A standard set of unit tests have been included for the controller, model, and message sender service. These can all be ran with `rspec` or `bundle exec rspec`. They are also ran by default as part of GitHub Actions. 
+### Running tests and rubocop
+A standard set of unit tests have been included for the controller, model, and message sender service. These can all be ran with `rspec` or `bundle exec rspec`. Rubocop is included as well, and can be ran with the `rubocop` command. These are also ran by default as part of GitHub Actions. 
 
 ### GitHub Actions
 Upon each commit to the `main` branch, GitHub Actions is set up to automatically run rubocop, rspec, bundler-audit, and brakeman.
