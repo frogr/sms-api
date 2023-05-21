@@ -55,7 +55,7 @@ class MessageSenderService
     @message.update(external_id: body['message_id'], status: 'delivered')
   end
 
-  def retry_with_backoff(max_retries, wait_time, &block)
+  def retry_with_backoff(max_retries, wait_time)
     retries = 0
 
     loop do
