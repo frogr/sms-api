@@ -21,7 +21,7 @@
     <%= form.text_field :message %>
   </div>
 
-  <%= form.hidden_field(:callback_url, :value => ENV['NGROK_CALLBACK_PATH'])%>
+  <%= form.hidden_field :callback_url, value: ENV['NGROK_CALLBACK_PATH'] %>
   <div>
     <%= form.submit %>
   </div>
