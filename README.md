@@ -27,11 +27,19 @@ Once a message is created through the new message form, a job is enqueued to sen
 
 If a message is ever indicated as "invalid", it is stored in Redis. Upon creation of a new message, we check that Redis store to make sure the number we're sending to isn't in the list of invalid numbers. Since this is a simple lookup operation, Redis can handle it very quickly. If we wanted to display that list of invalid numbers within the app, or otherwise use that store of numbers, it may be end up being more efficient to store these numbers in an indexed DB column instead of Redis. 
 
-Below is a diagram of the logic flow, with green arrows indicating success and red arrows indicating failures, and screenshots of my terminal to demonstrate the automatic provider switch and re-attempt after a failures from two different sources. 
+## Diagrams
+Below is a diagram describing the flow of the code itself, and then a more zoomed out diagram outlining the basic flow of the relevant requests and responses
 
-<details><summary>Logic Flow</summary>
+<details><summary>Code Logic Flow</summary>
 <img width="615" alt="Logic Flow (1)" src="https://github.com/frogr/sms-api/assets/24354711/17957318-e7f5-4268-9138-dd52f0747f44">
 </details>
+
+<details><summary>Basic API Flow</summary>
+  <img width="1024" alt="Base API flow" src="https://github.com/frogr/sms-api/assets/24354711/fc2f75bb-631c-4185-b527-9cfca8109466">
+</details>
+
+## Automatic retries
+If a message fails, it will automatically retry with another provider. Below are some screenshots of my terminal, generally detailing the process for automatic retries
 
 <details><summary>Automatic failover upon error</summary>
 <img width="1024" src="https://github.com/frogr/sms-api/assets/24354711/ed3ff200-33bb-4d15-851a-9b459f80eb0e">
