@@ -21,7 +21,7 @@
     <%= form.text_field :message %>
   </div>
 
-  <%= form.hidden_field(:callback_url, :value => "https://9289-2600-1702-211f-5610-acca-4082-c904-9bb8.ngrok-free.app/messages/callback")%>
+  <%= form.hidden_field(:callback_url, :value => ENV['NGROK_CALLBACK_PATH'])%>
   <div>
     <%= form.submit %>
   </div>

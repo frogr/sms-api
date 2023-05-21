@@ -52,6 +52,7 @@ gem 'bootsnap', require: false
 
 gem 'brakeman'
 gem 'bundler-audit'
+gem 'dotenv'
 gem 'pry'
 gem 'rubocop'
 gem 'rubocop-rails'
