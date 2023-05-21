@@ -5,7 +5,7 @@ require 'rails_helper'
 RSpec.describe MessageSenderService do
   let(:message) { Message.create(to_number: '1234567890', callback_url: callback_url, message: 'Test message') }
   let(:service) { described_class.new(message) }
-  let(:callback_url) { ENV['NGROK_CALLBACK_PATH'] }
+  let(:callback_url) { ENV.fetch('NGROK_CALLBACK_PATH', nil) }
   let(:max_retries) { 5 }
 
   describe '#call' do

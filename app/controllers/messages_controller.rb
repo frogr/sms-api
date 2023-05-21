@@ -38,10 +38,11 @@ class MessagesController < ApplicationController
       render json: { error: 'Message not found' }, status: :not_found
     else
       @message.update(status: params[:status])
+      @message.reload
 
-      store_in_redis if @message.reload.status == 'invalid'
+      store_in_redis if @message.status == 'invalid'
 
-      failed_message(@message) if @message.reload.status == 'failed'
+      failed_message(@message) if @message.status == 'failed'
 
       render json: @message
     end

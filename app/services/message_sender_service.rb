@@ -94,10 +94,10 @@ class MessageSenderService
 
   def log(response)
     Rails.logger.info("Message sent to #{@message.provider} with response: #{response}")
-    Rails.logger.info '***' * 20
+    Rails.logger.info '***' * 10
     Rails.logger.info "Response Code: #{response.code}"
     Rails.logger.info "Response: #{response}"
     Rails.logger.info "Response Body: #{response.body}"
-    Rails.logger.info '***' * 20
+    Rails.logger.info '***' * 10
   end
 end
