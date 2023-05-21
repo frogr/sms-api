@@ -8,33 +8,33 @@ class MessageSenderService
 
   PROVIDERS = ['https://mock-text-provider.parentsquare.com/provider1', 'https://mock-text-provider.parentsquare.com/provider2'].freeze
 
+  MAX_RETRIES = 5
+  INITIAL_WAIT_TIME = 2
+
   def initialize(message)
     @message = message
   end
 
   def call
-    retries = 0
-    max_retries = 5
-    wait_time = 2
     weighted_providers = weighted_shuffle(PROVIDERS, [0.7, 0.3])
-
-    loop do
-      break if message_sent_with_any_provider?(weighted_providers)
-
-      retries += 1
-      break if retries > max_retries
-
-      schedule_retry(wait_time)
-      wait_time *= 2
+    retry_with_backoff(MAX_RETRIES, INITIAL_WAIT_TIME) do
+      message_sent_with_any_provider?(weighted_providers)
     end
   end
 
+  private
+
   def message_sent_with_any_provider?(providers)
+    success = false
     providers.each do |provider|
-      return true if process_provider(provider)
+      if process_provider(provider)
+        success = true
+        break
+      end
     end
-    @message.update(status: 'failed')
-    false
+
+    set_message_status_failed unless success
+    success
   end
 
   def process_provider(provider)
@@ -53,6 +53,20 @@ class MessageSenderService
   def handle_success_response(response)
     body = JSON.parse(response.body)
     @message.update(external_id: body['message_id'], status: 'delivered')
+  end
+
+  def retry_with_backoff(max_retries, wait_time, &block)
+    retries = 0
+
+    loop do
+      return if yield
+
+      retries += 1
+      break if retries > max_retries
+
+      schedule_retry(wait_time)
+      wait_time *= 2
+    end
   end
 
   def schedule_retry(wait_time)
@@ -99,5 +113,10 @@ class MessageSenderService
     Rails.logger.info "Response: #{response}"
     Rails.logger.info "Response Body: #{response.body}"
     Rails.logger.info '***' * 10
+  end
+
+  def set_message_status_failed
+    @message.update(status: 'failed')
+    false
   end
 end
